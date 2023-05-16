@@ -167,24 +167,39 @@ void construitVoronoi(Application &app)
     Triangle superTriangle={{-1000,-1000},{500,3000},{1500,-1000}};
     app.triangles.push_back(superTriangle);
 
-    for (Coords& P : app.points) {
+    for (size_t k=0; app.points.size(); k++) {
         // Créer une liste de segments
         vector<Segment> LS;
 
         // Pour chaque triangle déjà créé
-        for (Triangle& T : app.triangles) {
+        for (size_t i = 0; app.triangles.size(); i++) {
             // Tester si le cercle circonscrit contient le point
             float xc, yc, rsqr;
-            if (CircumCircle(P.x, P.y, T.p1.x, T.p1.y, T.p2.x, T.p2.y, T.p3.x, T.p3.y, &xc, &yc, &rsqr)) {
+            if (CircumCircle(app.points[k].x,
+                app.points[k].y,
+                app.triangles[i].p1.x,
+                app.triangles[i].p1.y,
+                app.triangles[i].p2.x,
+                app.triangles[i].p2.y,
+                app.triangles[i].p3.x,
+                app.triangles[i].p3.y,
+                &xc,
+                &yc,
+                &rsqr)) {
                 // Récupérer les différents segments de ce triangle
-                LS.push_back({T.p1, T.p2});
-                LS.push_back({T.p2, T.p3});
-                LS.push_back({T.p3, T.p1});
+                Segment seg1 = {{app.triangles[i].p1.x, app.triangles[i].p1.y},{app.triangles[i].p2.x,app.triangles[i].p2.y}};
+                Segment seg2 = {{app.triangles[i].p2.x, app.triangles[i].p2.y},{app.triangles[i].p3.x,app.triangles[i].p3.y}};
+                Segment seg3 = {{app.triangles[i].p3.x, app.triangles[i].p3.y},{app.triangles[i].p1.x,app.triangles[i].p1.y}};
+                LS.push_back(seg1);
+                LS.push_back(seg2);
+                LS.push_back(seg3);
                
                 // Enlever le triangle de la liste
-                 T.complet=true;
+                 app.triangles.erase(app.triangles.begin()+i);
+                 i--;
+                 
 
-                auto last = app.triangles.end() - 1;
+                //auto last = app.triangles.end() - 1;
                 // iter_swap(find(app.triangles.begin(), last, T), last);
                 // app.triangles.pop_back();
             }
@@ -192,18 +207,29 @@ void construitVoronoi(Application &app)
     
 
         // Pour chaque segment de la liste LS 
-        for (auto& s1 : LS) {
-            for (auto& s2 : LS) {
+        for (size_t i = 0; LS.size(); i++) {
+            for (size_t j = 0; LS.size(); j++) {
                 // Si un segment partage ses points avec un autre segment, le virer
-                if (s1.p1 == s2.p2 && s1.p2 == s2.p1) {
-                   swap(s1,s2);
-                   LS.pop_back();
+                if(i==j)
+                    break;
+                    
+                if (LS[i].p1 == LS[j].p2 && LS[i].p2 == LS[j].p1) {
+                   LS.erase(LS.begin()+j);
+                   j--;
+                   i--;
+                   LS.erase(LS.begin()+i);
 
                 }
-                app.triangles.push_back(Triangle({s1.p1, s1.p2, P}));
+                
             }
             
         }
+        for(size_t i =0; i<LS.size(); i++){
+            Triangle newTriangle = {LS[i].p1, LS[i].p2,{app.points[k].x, app.points[k].y}};
+
+            app.triangles.push_back(newTriangle);
+        }
+        
     }
 
 }    
