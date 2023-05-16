@@ -167,12 +167,12 @@ void construitVoronoi(Application &app)
     Triangle superTriangle={{-1000,-1000},{500,3000},{1500,-1000}};
     app.triangles.push_back(superTriangle);
 
-    for (size_t k=0; app.points.size(); k++) {
+    for (size_t k=0; k<app.points.size(); k++) {
         // Créer une liste de segments
         vector<Segment> LS;
 
         // Pour chaque triangle déjà créé
-        for (size_t i = 0; app.triangles.size(); i++) {
+        for (size_t i = 0; i< app.triangles.size(); i++) {
             // Tester si le cercle circonscrit contient le point
             float xc, yc, rsqr;
             if (CircumCircle(app.points[k].x,
@@ -197,18 +197,13 @@ void construitVoronoi(Application &app)
                 // Enlever le triangle de la liste
                  app.triangles.erase(app.triangles.begin()+i);
                  i--;
-                 
-
-                //auto last = app.triangles.end() - 1;
-                // iter_swap(find(app.triangles.begin(), last, T), last);
-                // app.triangles.pop_back();
             }
         }
     
 
         // Pour chaque segment de la liste LS 
-        for (size_t i = 0; LS.size(); i++) {
-            for (size_t j = 0; LS.size(); j++) {
+        for (size_t i = 0; i<LS.size(); i++) {
+            for (size_t j = 0; j<LS.size(); j++) {
                 // Si un segment partage ses points avec un autre segment, le virer
                 if(i==j)
                     break;
