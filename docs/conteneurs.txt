@@ -1,0 +1,15 @@
+Les listes sont des conteneurs qui permettent d'insérer et de supprimer des éléments à n’importe quel endroit.
+    Avantages : 
+    Inconvénients :
+
+Les vecteurs sont des tableaux à taille dynamique. Ils peuvent se redimensionner automatiquement lorsqu’on ajoute ou supprime un élément. Le conteneur est parcouru grâce à des itérateurs. Les données sont insérées par la fin, parfois cela peut être lourd car si le conteneur n’est pas assez grand il faut l’agrandir.
+    Avantages : Taille dynamique
+    Inconvénients : moins efficaces pour ajouter des éléments puisque la taille doit s’étendre et donc il faut ajouter de la mémoire.
+
+Les conteneurs deque(double ended queue) sont des conteneurs à deux bouts. On peut supprimer et ajouter des éléments à la fin et au début du conteneur.
+    Avantages :  Les ajouts sont rapides puisque la mémoire allouée est fixe.  
+    Inconvénients : Moins efficaces dans le cas où on ne souhaite pas particulièrement ajouter des éléments. Inutile pour ajouter ou retirer des éléments en plein milieu.
+
+Les conteneurs map sont utilisés pour le stockage et la récupération de données d’une collection dans laquelle chaque élément est une paire qui a à la fois une valeur de données et une clé de tri. Ils permettent de trier automatiquement les données. La valeur d'un élément dans une classe map peut être modifiée directement. La valeur de clé est une constante et ne peut pas être modifiée. Les valeurs de clés associées aux anciens éléments doivent être supprimées, et de nouvelles valeurs de clés doivent être insérées pour les nouveaux éléments.
+    Avantages : 
+    Inconvénients :

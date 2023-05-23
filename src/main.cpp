@@ -50,7 +50,7 @@ void drawPoints(SDL_Renderer *renderer, const std::vector<Coords> &points)
 {
     for (std::size_t i = 0; i < points.size(); i++)
     {
-        filledCircleRGBA(renderer, points[i].x, points[i].y, 3, 240, 240, 23, SDL_ALPHA_OPAQUE);
+        filledCircleRGBA(renderer, points[i].x, points[i].y, 3, 240, 40, 230, SDL_ALPHA_OPAQUE);
     }
 }
 
@@ -76,7 +76,7 @@ void drawTriangles(SDL_Renderer *renderer, const std::vector<Triangle> &triangle
             t.p1.x, t.p1.y,
             t.p2.x, t.p2.y,
             t.p3.x, t.p3.y,
-            0, 240, 160, SDL_ALPHA_OPAQUE
+            30, 220, 250, SDL_ALPHA_OPAQUE
         );
     }
 }
@@ -224,10 +224,26 @@ void construitVoronoi(Application &app)
 
             app.triangles.push_back(newTriangle);
         }
+
+    // VORONOI
+    
+        vector<Coords> voronoiPolygon;
+    for (size_t i = 0; i < LS.size(); i++)
+    {
+        voronoiPolygon.push_back(LS[i].p1);
+        voronoiPolygon.push_back(LS[i].p2);
+        voronoiPolygon.push_back(Coords{app.points[k].x, app.points[k].y});
+    }
+
+    // Ajouter le polygone Voronoi à la liste des polygones
+    //app.voronoiPolygon.push_back(voronoiPolygon);
         
     }
 
-}    
+    
+
+}  
+
 
 bool handleEvent(Application &app)
 {
