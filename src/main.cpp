@@ -11,7 +11,7 @@ using namespace std;
 
 struct Coords
 {
-    int x, y;
+    float x, y;
 
     bool operator==(const Coords& other)
     {
@@ -227,13 +227,59 @@ void construitVoronoi(Application &app)
 
     // VORONOI
     
-        vector<Coords> voronoiPolygon;
-    for (size_t i = 0; i < LS.size(); i++)
-    {
-        voronoiPolygon.push_back(LS[i].p1);
-        voronoiPolygon.push_back(LS[i].p2);
-        voronoiPolygon.push_back(Coords{app.points[k].x, app.points[k].y});
+    //verifier si triangle adjacents
+    bool adjacent = false;
+    for (size_t i = 0; i< app.triangles.size(); i++) {
+        for (size_t j = 0; j< app.triangles.size(); j++) {
+            if(app.triangles[i].p1==app.triangles[j].p1 || app.triangles[i].p2==app.triangles[j].p2 || app.triangles[i].p3==app.triangles[j].p3){
+                adjacent=true;
+            }
+        }
+        
     }
+
+    for(size_t i; i<app.triangles.size(); i++ ){
+        for (size_t j = 0; j< app.triangles.size(); j++) {
+            if (adjacent){
+                float xc1, yc1, rsqr1;
+                CircumCircle(app.points[k].x,
+                    app.points[k].y,
+                    app.triangles[i].p1.x,
+                    app.triangles[i].p1.y,
+                    app.triangles[i].p2.x,
+                    app.triangles[i].p2.y,
+                    app.triangles[i].p3.x,
+                    app.triangles[i].p3.y,
+                    &xc1,
+                    &yc1,
+                    &rsqr1);
+                    
+                float xc2, yc2, rsqr2;
+                CircumCircle(app.points[k].x,
+                    app.points[k].y,
+                    app.triangles[j].p1.x,
+                    app.triangles[j].p1.y,
+                    app.triangles[j].p2.x,
+                    app.triangles[j].p2.y,
+                    app.triangles[j].p3.x,
+                    app.triangles[j].p3.y,
+                    &xc2,
+                    &yc2,
+                    &rsqr2);
+
+                    app.points.push_back(Coords{xc1, yc1});
+                    app.points.push_back(Coords{xc2, yc2});
+            
+        }
+    }
+
+    //     vector<Coords> voronoiPolygon;
+    // for (size_t i = 0; i < LS.size(); i++)
+    // {
+    //     voronoiPolygon.push_back(LS[i].p1);
+    //     voronoiPolygon.push_back(LS[i].p2);
+    //     voronoiPolygon.push_back(Coords{app.points[k].x, app.points[k].y});
+    // }
 
     // Ajouter le polygone Voronoi à la liste des polygones
     //app.voronoiPolygon.push_back(voronoiPolygon);
