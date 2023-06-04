@@ -11,9 +11,9 @@ using namespace std;
 
 struct Coords
 {
-    float x, y;
+     int x, y;
 
-    bool operator==(const Coords& other)
+    bool operator==(const Coords &other) const
     {
         return x == other.x and y == other.y;
     }
@@ -30,6 +30,21 @@ struct Triangle
     bool complet=false;
 };
 
+struct Polygon
+{
+    std::vector<Coords> points;
+};
+
+struct Circle
+{
+    Coords center;
+    int radius;
+};
+
+struct Color
+{
+    float r, g, b, a;
+};
 struct Application
 {
     int width, height;
@@ -37,6 +52,12 @@ struct Application
 
     std::vector<Coords> points;
     std::vector<Triangle> triangles;
+    std::vector<Polygon> polygons;
+    std::vector<Circle> circles;
+
+    bool show_delaunay = true;
+    bool show_voronoi = true;
+    bool show_circum = true;
 };
 
 bool compareCoords(Coords point1, Coords point2)
@@ -46,11 +67,12 @@ bool compareCoords(Coords point1, Coords point2)
     return point1.y < point2.y;
 }
 
+
 void drawPoints(SDL_Renderer *renderer, const std::vector<Coords> &points)
 {
     for (std::size_t i = 0; i < points.size(); i++)
     {
-        filledCircleRGBA(renderer, points[i].x, points[i].y, 3, 240, 40, 230, SDL_ALPHA_OPAQUE);
+        filledCircleRGBA(renderer, points[i].x, points[i].y, 3, 0, 0, 0, SDL_ALPHA_OPAQUE);
     }
 }
 
@@ -81,14 +103,56 @@ void drawTriangles(SDL_Renderer *renderer, const std::vector<Triangle> &triangle
     }
 }
 
+void drawPolygons(SDL_Renderer *renderer, const std::vector<Polygon> &polygons)
+{
+    for (std::size_t i = 0; i < polygons.size(); i++)
+    {
+        int r =(1*i) % 256; // Valeur aléatoire entre 0 et 255 pour r
+        int g = 100*i % 256; // Valeur aléatoire entre 0 et 255 pour g
+        int b = 200*i % 256; // Valeur aléatoire entre 0 et 255 pour b
+
+
+        const Polygon &polygon = polygons[i];
+        int numPoints = polygon.points.size();
+        Sint16 *polx = new Sint16[numPoints];
+        Sint16 *poly = new Sint16[numPoints];
+
+        for (int j = 0; j < numPoints; j++)
+        {
+            polx[j] = polygon.points[j].x;
+            poly[j] = polygon.points[j].y;
+
+        }
+
+        filledPolygonRGBA(renderer, polx, poly, numPoints, r, g, b, 255);
+
+     
+    }
+}
+
+void drawCircles(SDL_Renderer *renderer, const std::vector<Circle> &circles, Color color)
+{
+    for (std::size_t i = 0; i < circles.size(); i++)
+    {
+        const Circle &circle = circles[i];
+        circleRGBA(
+            renderer,
+            circle.center.x, circle.center.y,
+            circle.radius,
+            color.r, color.g, color.b, color.a);
+    }
+}
+
 void draw(SDL_Renderer *renderer, const Application &app)
 {
     /* Remplissez cette fonction pour faire l'affichage du jeu */
     int width, height;
     SDL_GetRendererOutputSize(renderer, &width, &height);
-
+    
+    drawPolygons(renderer, app.polygons);
     drawPoints(renderer, app.points);
     drawTriangles(renderer, app.triangles);
+
 }
 
 /*
@@ -155,6 +219,7 @@ bool CircumCircle(
 
     return ((drsqr - *rsqr) <= EPSILON ? true : false);
 }
+
 
 void construitVoronoi(Application &app)
 {
@@ -226,69 +291,35 @@ void construitVoronoi(Application &app)
         }
 
     // VORONOI
-    
-    //verifier si triangle adjacents
-    bool adjacent = false;
-    for (size_t i = 0; i< app.triangles.size(); i++) {
-        for (size_t j = 0; j< app.triangles.size(); j++) {
-            if(app.triangles[i].p1==app.triangles[j].p1 || app.triangles[i].p2==app.triangles[j].p2 || app.triangles[i].p3==app.triangles[j].p3){
-                adjacent=true;
-            }
-        }
-        
-    }
+    // Créer une liste de polygones
+    std::vector<Polygon> polygones;
 
-    for(size_t i; i<app.triangles.size(); i++ ){
-        for (size_t j = 0; j< app.triangles.size(); j++) {
-            if (adjacent){
-                float xc1, yc1, rsqr1;
-                CircumCircle(app.points[k].x,
-                    app.points[k].y,
-                    app.triangles[i].p1.x,
-                    app.triangles[i].p1.y,
-                    app.triangles[i].p2.x,
-                    app.triangles[i].p2.y,
-                    app.triangles[i].p3.x,
-                    app.triangles[i].p3.y,
-                    &xc1,
-                    &yc1,
-                    &rsqr1);
-                    
-                float xc2, yc2, rsqr2;
-                CircumCircle(app.points[k].x,
-                    app.points[k].y,
-                    app.triangles[j].p1.x,
-                    app.triangles[j].p1.y,
-                    app.triangles[j].p2.x,
-                    app.triangles[j].p2.y,
-                    app.triangles[j].p3.x,
-                    app.triangles[j].p3.y,
-                    &xc2,
-                    &yc2,
-                    &rsqr2);
+    for (size_t i = 0; i < app.points.size(); i++)
+    {
+        // Créer un polygone
+        Polygon polyg;
 
-                    app.points.push_back(Coords{xc1, yc1});
-                    app.points.push_back(Coords{xc2, yc2});
-            
+        for (size_t j = 0; j < app.triangles.size(); j++)
+        {
+            // Si le triangle contient le point P (adjacent)
+           if (app.triangles[j].p1 == app.points[i] || app.triangles[j].p2 == app.points[i] || app.triangles[j].p3 == app.points[i])
+            {
+                // Récupérer le centre du cercle circonscrit
+                float x, y, rsqr;
+                CircumCircle(app.triangles[j].p1.x, app.triangles[j].p1.y, app.triangles[j].p1.x, app.triangles[j].p1.y, app.triangles[j].p2.x, app.triangles[j].p2.y, app.triangles[j].p3.x, app.triangles[j].p3.y,
+                             &x, &y, &rsqr);
+
+                // Ajouter le centre du cercle circonscrit au polygone
+                polyg.points.push_back({(int)x,(int)y});
+
+                // Ajouter le polygone à la liste de polygones pour le draw
+                app.polygons.push_back(polyg);
+           }
         }
     }
 
-    //     vector<Coords> voronoiPolygon;
-    // for (size_t i = 0; i < LS.size(); i++)
-    // {
-    //     voronoiPolygon.push_back(LS[i].p1);
-    //     voronoiPolygon.push_back(LS[i].p2);
-    //     voronoiPolygon.push_back(Coords{app.points[k].x, app.points[k].y});
-    // }
-
-    // Ajouter le polygone Voronoi à la liste des polygones
-    //app.voronoiPolygon.push_back(voronoiPolygon);
-        
     }
-
-    
-
-}  
+}
 
 
 bool handleEvent(Application &app)
